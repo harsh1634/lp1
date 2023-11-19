@@ -1,0 +1,125 @@
+package macro;
+
+//Import necessary packages for file handling and data structures
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+
+//Class definition for MacroPass1
+public class pass1 
+{
+
+ // Main method that handles the macro processing in Pass 1
+ public static void main(String[] args) throws IOException 
+ {
+     // Input: Reading from the "macro_input.asm" file
+     BufferedReader br = new BufferedReader(new FileReader("D:/Study/Java/LP1_Prac/src/macro/macro_input.asm"));
+
+     // Output files for Macro Name Table (MNT), Macro Definition Table (MDT),
+     // Keyword Parameter Definition Table (KPDT), Parameter Name Table (PNT),
+     // and Intermediate Representation (IR).
+     FileWriter mnt = new FileWriter("D:/Study/Java/LP1_Prac/src/macro/mnt.txt");
+     FileWriter mdt = new FileWriter("D:/Study/Java/LP1_Prac/src/macro/mdt.txt");
+     FileWriter kpdt = new FileWriter("D:/Study/Java/LP1_Prac/src/macro/kpdt.txt");
+     FileWriter pnt = new FileWriter("D:/Study/Java/LP1_Prac/src/macro/pntab.txt");
+     FileWriter ir = new FileWriter("D:/Study/Java/LP1_Prac/src/macro/intermediate.txt");
+
+     // Data structures to store information during processing
+     LinkedHashMap<String, Integer> pntab = new LinkedHashMap<>();
+     String Macroname = null;
+     int mdtp = 1, kpdtp = 0, paramNo = 1, pp = 0, kp = 0, flag = 0;
+
+     // Loop through each line in the input file
+     String line;
+     while ((line = br.readLine()) != null) {
+         // Splitting line into parts based on whitespace
+         String parts[] = line.split("\\s+");
+
+         if (parts[0].equalsIgnoreCase("MACRO")) {
+             // Process when a MACRO is encountered
+             flag = 1;
+             line = br.readLine();
+             parts = line.split("\\s+");
+             Macroname = parts[0];
+
+             if (parts.length <= 1) {
+                 // If MACRO has no parameters
+                 mnt.write(parts[0] + "\t" + pp + "\t" + kp + "\t" + mdtp + "\t" + (kp == 0 ? kpdtp : (kpdtp + 1)) + "\n");
+                 continue;
+             }
+
+             for (int i = 1; i < parts.length; i++) {
+                 // Processing parameters
+                 parts[i] = parts[i].replaceAll("[&,]", "");
+
+                 if (parts[i].contains("=")) {
+                     // Handling keyword parameters
+                     ++kp;
+                     String keywordParam[] = parts[i].split("=");
+                     pntab.put(keywordParam[0], paramNo++);
+                     if (keywordParam.length == 2) {
+                         kpdt.write(keywordParam[0] + "\t" + keywordParam[1] + "\n");
+                     } else {
+                         kpdt.write(keywordParam[0] + "\t-\n");
+                     }
+                 } else {
+                     // Handling positional parameters
+                     pntab.put(parts[i], paramNo++);
+                     pp++;
+                 }
+             }
+
+             mnt.write(parts[0] + "\t" + pp + "\t" + kp + "\t" + mdtp + "\t" + (kp == 0 ? kpdtp : (kpdtp + 1)) + "\n");
+             kpdtp = kpdtp + kp;
+
+         } else if (parts[0].equalsIgnoreCase("MEND")) {
+             // Process when MEND is encountered
+             mdt.write(line + "\n");
+             flag = kp = pp = 0;
+             mdtp++;
+             paramNo = 1;
+
+             // Writing to Parameter Name Table (PNT)
+             pnt.write(Macroname + ":\t");
+             Iterator<String> itr = pntab.keySet().iterator();
+             while (itr.hasNext()) {
+                 pnt.write(itr.next() + "\t");
+             }
+             pnt.write("\n");
+             pntab.clear();
+
+         } else if (flag == 1) {
+             // Process during macro expansion
+             for (int i = 0; i < parts.length; i++) {
+                 if (parts[i].contains("&")) {
+                     // Handling parameters in macro expansion
+                     parts[i] = parts[i].replaceAll("[&,]", "");
+                     mdt.write("(P," + pntab.get(parts[i]) + ")\t");
+                 } else {
+                     // Writing other parts of the macro expansion
+                     mdt.write(parts[i] + "\t");
+                 }
+             }
+             mdt.write("\n");
+             mdtp++;
+         } else {
+             // Writing non-macro lines to Intermediate Representation (IR)
+             ir.write(line + "\n");
+         }
+     }
+
+     // Closing file readers and writers
+     br.close();
+     mdt.close();
+     mnt.close();
+     ir.close();
+     pnt.close();
+     kpdt.close();
+
+     // Print a message indicating successful completion
+     System.out.println("Macro Pass 1 Processing done. :)");
+ }
+}

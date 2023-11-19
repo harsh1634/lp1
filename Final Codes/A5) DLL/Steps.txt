@@ -1,0 +1,60 @@
+1) new
+
+2) project
+
+3) installed, visual c++, win32 console app, name:CalculatorDLL, ok
+
+4) DLL, empty project, finish
+
+5) header files, .h, CalculatorDLL.h, add
+
+6) #ifndef _CALCULATORDLL_h_
+#define _CALCULATORDLL_h_
+#ifdef CALCULATORDLL_EXPORTS
+#define CALCULATORDLL_API __declspec(dllexport)
+#else
+#define CALCULATORDLL_API __declspec(dllimport)
+#endif
+CALCULATORDLL_API int Addition(int x,int y);
+#endif
+
+7) source files, c++ file, name: Calculator.c, add
+
+8) #ifndef _CALCULATORDLL_c_
+#define _CALCULATORDLL_c_
+#include "CalculatorDLL.h"
+int Addition(int x,int y)
+{
+int z;
+z=x+y;
+return z;
+}
+#endif
+
+9) build, build solution
+
+10) repeat 1,2,3 name:CalculatorAPP
+
+11) Console application
+
+12) references, choose project, add reference, select the one
+
+13) same window goto c/c++ general, addidtional directories, add path of CalculatorDLL
+
+14) same window goto debugging, environment, add path of CalculatorAPP\Debug (PATH=" ")
+
+15) solution explorer, source file, add new, c++ file, name:CalculatorAPP.c, add
+
+16) #include<stdio.h>
+#include "CalculatorDLL\CalculatorDLL.h"
+int main()
+{
+int a;
+a = Addition(10,5);
+printf("Addition=%d\n",a);
+return 0;
+}
+
+17) build, build solution
+
+18) debug, start without debugging

@@ -1,0 +1,96 @@
+package cpu_scheduling;
+import java.util.*;
+
+public class FCFS {
+	public static void main(String[] args)
+	{
+		Scanner sc = new Scanner(System.in);
+		System.out.println("*** First Come First Serve Algorithm ***");
+		System.out.println("Enter the number of processes: ");
+		int n = sc.nextInt();
+
+		int process[] = new int[n];
+		int arrivaltime[] = new int[n];
+		int bursttime[] = new int[n];
+		int completiontime[] = new int[n];
+		int turnaroundtime[] = new int[n];
+		int waitingtime[] = new int[n];
+		float avgtat = 0, avgwt = 0;
+		int temp;
+		
+		//take input
+		for(int i=0; i<n; i++)
+		{
+			process[i] = (i+1);
+			System.out.println("\nEnter the arrival time for process"+(i+1)+" : ");
+			arrivaltime[i] = sc.nextInt();
+			System.out.println("Enter the burst time for process"+(i+1)+" : ");
+			bursttime[i] = sc.nextInt();
+		}
+		
+		//arrange according to arrival time
+		for(int i=0; i<n; i++)
+		{
+			for(int j=0; j<n; j++)
+			{
+				if(arrivaltime[i]<arrivaltime[j])
+				{
+					temp = process[i];
+					process[i] = process[j];
+					process[j] = temp;
+					
+					temp = arrivaltime[i];
+					arrivaltime[i] = arrivaltime[j];
+					arrivaltime[j] = temp;
+					
+					temp = bursttime[i];
+					bursttime[i] = bursttime[j];
+					bursttime[j] = temp;
+				}
+			}
+		}
+		
+		//calculate completion time
+		temp = 0;
+		int a = 0;
+		while(true)
+		{
+			if(arrivaltime[a]<=temp)
+			{
+				completiontime[a] = temp + bursttime[a];
+				temp = completiontime[a];
+				a = a+1;
+				if(a==n)
+				{
+					break;
+				}
+			}
+			else
+			{
+				temp = temp + 1;
+			}
+		}
+		
+		System.out.println("");
+		System.out.println("Process\tArrival time\tBurst time\tCompletion time\tTurnaround time\tWatiting time");
+		System.out.println("----------------------------------------------------------------------------------");
+		
+		//calculating turnaround time, waiting time
+		for(int i=0; i<n; i++)
+		{
+			turnaroundtime[i] = completiontime[i] - arrivaltime[i];
+			avgtat = avgtat + turnaroundtime[i];
+			waitingtime[i] = turnaroundtime[i] - bursttime[i];
+			avgwt = avgwt + waitingtime[i];
+		}
+		
+		//display table result
+		for(int i=0; i<n; i++)
+		{
+			System.out.println("P"+process[i]+"\t\t"+arrivaltime[i]+"\t\t"+bursttime[i]+"\t\t"+completiontime[i]+"\t\t"+turnaroundtime[i]+"\t\t"+waitingtime[i]);
+		}
+		System.out.println("Average waiting time = "+(avgwt/n)+"\nAverage Turnaround Time = "+(avgtat/n));
+		
+	}
+}
+
